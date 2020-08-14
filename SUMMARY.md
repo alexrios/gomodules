@@ -31,5 +31,4 @@
 ---
 
 * [FAQ](faq.md)
-* [Ajude o projeto](ajude-o-projeto.md)
 
