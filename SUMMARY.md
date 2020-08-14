@@ -8,6 +8,7 @@
 
 ## Básico
 
+* [O que é um módulo?](basico/o-que-e-um-modulo.md)
 * [Rotina usando módulos](basico/rotina-usando-modulos.md)
 * [Comandos comuns](basico/comandos-comuns.md)
 
