@@ -32,15 +32,13 @@ se o lado direito de uma diretiva `replace` for um caminho do sistema de arquivo
 Em geral, você tem a opção de especificar uma versão à esquerda de =&gt; em uma diretiva `replace`, mas normalmente é menos sensível a alterações se você omitir isso \(por exemplo, como feito em todos os exemplos de substituição acima\).
 {% endhint %}
 
-{% hint style="danger" %}
-No Go 1.11, para dependências diretas, uma diretiva `require` é necessária mesmo se for feito um `replace`.  
-  
-Por exemplo, se `foo` é uma dependência direta, você não pode `replace foo => ../foo` sem um `require` correspondente para `foo`. Se você não tiver certeza de qual versão usar na diretiva `require`, você pode frequentemente usar `v0.0.0`, como `require foo v0.0.0`. Isso foi corrigido na versão 1.12 com [\#26241](https://golang.org/issue/26241).
-{% endhint %}
-
 Você pode confirmar que está obtendo as versões esperadas executando `go list -m all`, que mostra as versões finais reais que serão usadas em sua construção, incluindo a consideração de instruções de `replace`.
 
-See the next FAQ for the details of using `replace` to work entirely outside of VCS.
+{% hint style="danger" %}
+No Go 1.11, para dependências diretas, uma diretiva `require` é necessária mesmo se for feito um `replace`. Por exemplo, se `foo` é uma dependência direta, você não pode `replace foo => ../foo` sem um `require` correspondente para `foo`. Se você não tiver certeza de qual versão usar na diretiva `require`, você pode frequentemente usar `v0.0.0`, como `require foo v0.0.0`. Isso foi corrigido na versão 1.12 com [\#26241](https://golang.org/issue/26241).
+{% endhint %}
+
+Consulte o próximo FAQ para obter os detalhes de como usar `replace` para funcionar inteiramente fora do versionador de código.
 
 
 
