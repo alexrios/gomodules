@@ -33,4 +33,5 @@
 * [FAQ](faq.md)
 * [Quando usar replace?](quando-usar-replace.md)
 * [Posso trabalhar totalmente sem um versionador de código em meu sistema de arquivos local?](posso-trabalhar-totalmente-sem-um-versionador-de-codigo-em-meu-sistema-de-arquivos-local.md)
+* [Como faço para usar a "vendor" com módulos?](como-faco-para-usar-a-vendor-com-modulos.md)
 
