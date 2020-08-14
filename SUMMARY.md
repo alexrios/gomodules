@@ -13,11 +13,9 @@
 
 ## Novos conceitos
 
----
-
-* [Modules](modules.md)
-* [go.mod](go.mod.md)
-* [Seleção de versão](selecao-de-versao.md)
+* [Modules](novos-conceitos/modules.md)
+* [go.mod](novos-conceitos/go.mod.md)
+* [Seleção de versão](novos-conceitos/selecao-de-versao.md)
 
 ## Avançado
 
