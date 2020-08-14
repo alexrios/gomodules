@@ -14,7 +14,6 @@
 
 ## Novos conceitos
 
-* [Modules](novos-conceitos/modules.md)
 * [go.mod](novos-conceitos/go.mod.md)
 * [Seleção de versão](novos-conceitos/selecao-de-versao.md)
 
@@ -32,4 +31,6 @@
 ---
 
 * [FAQ](faq.md)
+* [Quando usar replace?](quando-usar-replace.md)
+* [Posso trabalhar totalmente sem um versionador de código em meu sistema de arquivos local?](posso-trabalhar-totalmente-sem-um-versionador-de-codigo-em-meu-sistema-de-arquivos-local.md)
 
