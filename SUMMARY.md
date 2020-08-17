@@ -2,14 +2,12 @@
 
 * [Boas-vindas](README.md)
 
-## PRIMEIROS PASSOS
-
-* [Meu primeiro módulo](primeiros-passos/meu-primeiro-modulo.md)
-
 ## Básico
 
 * [O que é um módulo?](basico/o-que-e-um-modulo.md)
-* [Rotina usando módulos](basico/rotina-usando-modulos.md)
+* [Rotina usando módulos](basico/rotina-usando-modulos/README.md)
+  * [Criando um novo módulo](basico/rotina-usando-modulos/criando-um-novo-modulo.md)
+  * [Adicionando uma dependência](basico/rotina-usando-modulos/adicionando-uma-dependencia.md)
 * [Comandos comuns](basico/comandos-comuns.md)
 
 ## Novos conceitos

@@ -19,8 +19,6 @@ Resumindo a relação entre repositórios, módulos e pacotes:
 * **Cada módulo contém um ou mais pacotes Go.**
 * **Cada pacote consiste de um ou mais arquivos Go em um único diretório.**
 
-
-
 Módulos devem ser semanticamente versionados de acordo com [semver](https://semver.org/lang/pt-BR/), geralmente na forma **v\(major\).\(Minor\).\(Patch\)**, como v0.1.0, v1.2.3 ou v1.5.0-rc.1. **O v inicial é obrigatório**.   
   
 Se estiver usando GIT, a versão estará associada as [tags](https://git-scm.com/book/pt-br/v2/Fundamentos-de-Git-Criando-Tags) do repositório.
