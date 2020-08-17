@@ -8,6 +8,7 @@
 * [Rotina usando módulos](basico/rotina-usando-modulos/README.md)
   * [Criando um novo módulo](basico/rotina-usando-modulos/criando-um-novo-modulo.md)
   * [Adicionando uma dependência](basico/rotina-usando-modulos/adicionando-uma-dependencia.md)
+  * [Atualizando dependências](basico/rotina-usando-modulos/atualizando-dependencias.md)
 * [Comandos comuns](basico/comandos-comuns.md)
 
 ## Novos conceitos
