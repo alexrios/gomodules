@@ -9,6 +9,7 @@
   * [Criando um novo módulo](basico/rotina-usando-modulos/criando-um-novo-modulo.md)
   * [Adicionando uma dependência](basico/rotina-usando-modulos/adicionando-uma-dependencia.md)
   * [Atualizando dependências](basico/rotina-usando-modulos/atualizando-dependencias.md)
+  * [Adicionando uma dependência em uma nova versão principal \(major\)](basico/rotina-usando-modulos/adicionando-uma-dependencia-em-uma-nova-versao-principal-major.md)
 * [Comandos comuns](basico/comandos-comuns.md)
 
 ## Novos conceitos
