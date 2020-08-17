@@ -53,3 +53,13 @@ $
 Parabéns! Você escreveu e testou seu primeiro módulo.
 {% endhint %}
 
+O comando `go mod init` escreveu um arquivo go.mod:
+
+```text
+$ cat go.mod
+module example.com/hello
+
+go 1.12
+$
+```
+
