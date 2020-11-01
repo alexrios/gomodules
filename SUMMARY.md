@@ -33,6 +33,7 @@
 * [Quando usar replace?](faq/quando-usar-replace.md)
 * [Posso trabalhar totalmente sem um versionador de código em meu sistema de arquivos local?](faq/posso-trabalhar-totalmente-sem-um-versionador-de-codigo-em-meu-sistema-de-arquivos-local.md)
 * [Como faço para usar a "vendor" com módulos?](faq/como-faco-para-usar-a-vendor-com-modulos.md)
+* [Que ferramentas posso usar para trabalhar com módulos?](faq/que-ferramentas-posso-usar-para-trabalhar-com-modulos.md)
 
 ## Releases
 
