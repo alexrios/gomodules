@@ -14,6 +14,7 @@
 
 ## Novos conceitos
 
+* [Módulos](novos-conceitos/modules.md)
 * [go.mod](novos-conceitos/go.mod.md)
 * [Seleção de versão](novos-conceitos/selecao-de-versao.md)
 
