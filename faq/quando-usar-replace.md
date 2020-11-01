@@ -1,6 +1,6 @@
 # Quando usar replace?
 
-Conforme descrito na seção [go.mod](novos-conceitos/go.mod.md), as diretivas `replace` fornecem controle adicional no `go.mod` do módulo principal do que é realmente usado para satisfazer uma dependência encontrada nos arquivos `.go` ou `go.mod`, enquanto as diretivas de `replace` em módulos diferentes do módulo principal são ignorados na construção.
+Conforme descrito na seção [go.mod](../novos-conceitos/go.mod.md), as diretivas `replace` fornecem controle adicional no `go.mod` do módulo principal do que é realmente usado para satisfazer uma dependência encontrada nos arquivos `.go` ou `go.mod`, enquanto as diretivas de `replace` em módulos diferentes do módulo principal são ignorados na construção.
 
 A diretiva `replace` permite que você forneça outro caminho de importação \(import path\) que pode ser outro módulo localizado no VCS \(GitHub ou outro lugar\), ou em seu sistema de arquivos local com um caminho de arquivo relativo ou absoluto. O novo caminho de importação da diretiva `replace` é usado sem a necessidade de atualizar os caminhos de importação no código-fonte real.
 
