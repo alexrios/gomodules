@@ -42,7 +42,7 @@ Assim seria importado o pacote `bar` do módulo `github.com/user/mymod`.
 
 ### replace e exclude
 
-`exclude` e `replace` as diretivas operam apenas no módulo atual \("principal"\). `exclude` e `replace` em módulos diferentes do módulo principal são ignoradas ao construir o módulo principal. As instruções `exclude` e `replace`, portanto, permitem que o módulo principal controle completamente sobre sua própria construção, sem também estar sujeito a ser controlado por suas dependências. \(Veja o [FAQ](../quando-usar-replace.md) sobre quando usar uma diretiva `replace`\).
+`exclude` e `replace` as diretivas operam apenas no módulo atual \("principal"\). `exclude` e `replace` em módulos diferentes do módulo principal são ignoradas ao construir o módulo principal. As instruções `exclude` e `replace`, portanto, permitem que o módulo principal controle completamente sobre sua própria construção, sem também estar sujeito a ser controlado por suas dependências. \(Veja o [FAQ](../faq/quando-usar-replace.md) sobre quando usar uma diretiva `replace`\).
 
 
 
