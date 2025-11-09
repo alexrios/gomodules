@@ -2,6 +2,10 @@
 
 Um módulo é uma coleção de pacotes Go relacionados. Sendo uma unidade de código\(s\)-fonte versionável e intercambiavel.
 
+{% hint style="info" %}
+**Desde Go 1.16** (fevereiro de 2021), módulos são **obrigatórios** e o modo padrão do Go. A antiga abordagem baseada em GOPATH foi descontinuada.
+{% endhint %}
+
 Módulos tem 2 principais objetivos:
 
 1. Manter os requisitos especificos das dependências.
@@ -10,7 +14,7 @@ Módulos tem 2 principais objetivos:
 Na maioria das vezes, um repositório de controle de versão, como o GIT, contém exatamente um módulo definido na raiz do repositório. 
 
 {% hint style="warning" %}
-Vários módulos são suportados em um único repositório, mas normalmente isso resultaria em **mais trabalho** no dia-a-dia do que um único módulo por repositório.
+Vários módulos são suportados em um único repositório, mas normalmente isso resultaria em **mais trabalho** no dia-a-dia do que um único módulo por repositório. **Go 1.18** introduziu o [Workspace Mode](../avancado/workspace-mode.md) para facilitar o desenvolvimento com múltiplos módulos localmente.
 {% endhint %}
 
 Resumindo a relação entre repositórios, módulos e pacotes:

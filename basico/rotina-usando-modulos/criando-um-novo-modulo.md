@@ -2,7 +2,7 @@
 
 Vamos criar um novo módulo.
 
-Crie um novo diretório vazio \(em algum lugar fora de $GOPATH/src\), vá até esse diretório e, em seguida, crie um novo arquivo, `hello.go`:
+Crie um novo diretório vazio em qualquer lugar do seu sistema de arquivos (desde Go 1.16, não é mais necessário se preocupar com $GOPATH), vá até esse diretório e, em seguida, crie um novo arquivo, `hello.go`:
 
 ```go
 package hello
@@ -27,16 +27,13 @@ func TestHello(t *testing.T) {
 }
 ```
 
-Neste ponto, o diretório contém um pacote, mas não um módulo, porque não há um arquivo `go.mod`. Se estivéssemos trabalhando em /home/gopher/hello e executássemos o teste agora, veríamos:
+Neste ponto, o diretório contém um pacote, mas não um módulo, porque não há um arquivo `go.mod`.
 
-```bash
-$ go test
-PASS
-ok  	_/home/gopher/hello	0.020s
-$
-```
+{% hint style="warning" %}
+**Desde Go 1.16**, é obrigatório ter um arquivo `go.mod` para trabalhar com Go. Se você tentar executar `go test` sem um `go.mod`, receberá um erro.
+{% endhint %}
 
-A última linha resume o teste geral do pacote. Como estamos trabalhando fora do $GOPATH e também fora de qualquer módulo, o comando `go` não conhece o caminho de importação \(import path\) para o diretório atual e cria um falso com base no nome do diretório: `_/home/gopher/hello`.
+Se estivéssemos trabalhando em /home/gopher/hello e executássemos o teste sem um `go.mod`, veríamos um erro solicitando que você execute `go mod init` primeiro.
 
 Vamos tornar o diretório atual a raiz de um módulo usando `go mod init` e, em seguida, tente `go test` novamente:
 
@@ -59,7 +56,11 @@ O comando `go mod init` escreveu um arquivo go.mod:
 $ cat go.mod
 module example.com/hello
 
-go 1.12
+go 1.25
 $
 ```
+
+{% hint style="info" %}
+A diretiva `go` no arquivo `go.mod` indica a versão mínima do Go necessária para compilar este módulo. Desde Go 1.21, o Go pode automaticamente baixar e usar a versão correta do toolchain se necessário.
+{% endhint %}
 

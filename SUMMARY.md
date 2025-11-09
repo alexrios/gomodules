@@ -23,6 +23,12 @@
 * [Go Module Proxy](avancado/go-module-proxy.md)
 * [go.sum](avancado/go.sum.md)
 * [Checksum Database](avancado/checksum-database.md)
+* [Workspace Mode](avancado/workspace-mode.md)
+* [Lazy Loading e Graph Pruning](avancado/lazy-loading.md)
+* [Gerenciamento de Toolchains](avancado/toolchain-management.md)
+* [Module Retraction](avancado/module-retraction.md)
+* [Tool Dependencies](avancado/tool-dependencies.md)
+* [Security Features](avancado/security-features.md)
 
 ## Tutoriais
 
@@ -43,4 +49,7 @@
 * [1.13](releases/1.13.md)
 * [1.14](releases/1.14.md)
 * [1.15](releases/1.15.md)
+* [1.16-1.17: Lazy Loading Era](releases/1.16-1.17.md)
+* [1.18-1.21: Workspace & Toolchain Era](releases/1.18-1.21.md)
+* [1.22-1.25: Modern Features Era](releases/1.22-1.25.md)
 
