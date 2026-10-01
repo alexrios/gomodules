@@ -69,4 +69,4 @@ A diretiva `go` no arquivo `go.mod` indica a versão mínima do Go necessária p
 
 No Go 1.27, essa linha começa com a versão do toolchain que executou `go mod init`, incluindo o patch. Se você precisa atender uma versão anterior, pode ajustar o requisito com `go get go@1.26.0` e testar com essa versão. O código e as dependências também precisam ser compatíveis com ela.
 
-As notas do Go 1.26 descrevem um padrão diferente, que escolhia uma versão anterior. Essa mudança foi revertida no Go 1.27. Veja os detalhes no [histórico dessas versões](/releases/1.26-1.27/).
+As notas do Go 1.26.0 descrevem um padrão diferente, que escolhia uma versão anterior. Essa mudança foi revertida no Go 1.26.1 e no Go 1.27. Veja os detalhes no [histórico dessas versões](/releases/1.26-1.27/).
