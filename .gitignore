@@ -1,5 +1,7 @@
-# GitBook / HonKit build output
-_book/
+# Astro / Starlight
+node_modules/
+dist/
+.astro/
 
 # IDEs
 .idea/

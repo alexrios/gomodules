@@ -1,0 +1,11 @@
+[tools]
+node = "22.22.3"
+pnpm = "11.5.2"
+
+[tasks.dev]
+description = "Abrir o livro para edição local"
+run = "pnpm dev"
+
+[tasks.verify]
+description = "Conferir tipos, build e links internos do livro"
+run = "pnpm verify"
