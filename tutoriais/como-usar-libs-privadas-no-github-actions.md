@@ -20,16 +20,23 @@ Para entender como Go usa um SVC para lidar com dependências, recomendo o blog:
 
 Gere um token com permissão de leitura na **org** ou **usuario** do repositorio e configure a substituição no git.
 
-Dessa forma a autenticação será sempre utilizada.
+Configure também `GOPRIVATE`, para que esses caminhos não sejam consultados no proxy e no checksum database públicos. O token precisa ter acesso aos repositórios das dependências; o `GITHUB_TOKEN` do workflow pode não ter acesso a outros repositórios privados.
 
 É recomendavel usar os **secrets** do repositório para evitar a exposição de dados sensiveis, nesse caso, o token.
 
-```text
+```yaml
 - name: Granting private modules access
-        run: |
-          git config --global url."https://${{ secrets.GO_MODULES_TOKEN }}:x-oauth-basic@github.com/alexrios".insteadOf "https://github.com/alexrios"     
+  env:
+    GOPRIVATE: "github.com/alexrios/*"
+    GO_MODULES_TOKEN: ${{ secrets.GO_MODULES_TOKEN }}
+  run: |
+    git config --global url."https://${GO_MODULES_TOKEN}:x-oauth-basic@github.com/alexrios/".insteadOf "https://github.com/alexrios/"
+    go mod tidy
+    go test ./...
 ```
 
 para saber mais sobre declarar e usar secrets no github:  
-[https://help.github.com/pt/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets](https://help.github.com/pt/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets)
+[https://docs.github.com/pt/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions](https://docs.github.com/pt/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions)
 
+
+Veja também [Módulos privados na documentação do Go](https://go.dev/ref/mod#private-modules).

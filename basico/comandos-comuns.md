@@ -16,16 +16,16 @@
 ### Visualização e Inspeção
 
 * `go list -m all` — Lista todos os módulos que são dependências do projeto atual
-* `go list -u -m all` — Ver as atualizações minor e patch disponíveis para todas as dependências diretas ou indiretas
+* `go list -u -m all` — Ver as atualizações disponíveis no mesmo caminho de módulo para todas as dependências diretas ou indiretas
 * `go list -m -versions <module>` — Lista todas as versões disponíveis de um módulo
-* `go list -m -json all` — Exporta informações de módulos em formato JSON (Go 1.25+)
+* `go list -m -json all` — Exporta informações de módulos em formato JSON
 * `go mod graph` — Imprime o gráfico de dependências do módulo
 * `go mod why -m <module>` — Explica por que um módulo é necessário
 
 ### Verificação e Download
 
 * `go mod verify` — Verifica as dependências não foram modificadas desde o download
-* `go mod download` — Baixa módulos para o cache local sem adicioná-los ao `go.mod`
+* `go mod download` — Baixa módulos para o cache local; não substitui `go get` para registrar uma nova dependência
 * `go mod download -json <module>` — Baixa e retorna informações em JSON
 
 ## Workspace Mode (Go 1.18+)
@@ -36,17 +36,32 @@
 * `go work edit` — Edita o arquivo go.work
 * `go work sync` — Sincroniza as dependências do workspace com os módulos
 * `go work vendor` — Cria o diretório vendor a partir do workspace (Go 1.22+)
+* `go test work` — Testa todos os pacotes dos módulos do workspace (Go 1.25+)
 
 ## Build e Teste
 
 * `go build ./...` — Build de todos os pacotes no módulo (a partir do diretório raiz)
 * `go test ./...` — Executa testes de todos os pacotes no módulo
 * `go build -o <output> <pacote>` — Build com nome de saída específico
-* `go install <pacote>@<versão>` — Instala um programa em `$GOPATH/bin` (Go 1.16+)
+* `go install <pacote>@<versão>` — Instala um programa em `$GOBIN`, ou em `$GOPATH/bin` quando `GOBIN` não está definido (Go 1.16+)
 
 {% hint style="info" %}
 **Desde Go 1.16**, comandos de build (`go build`, `go test`) **não modificam mais** automaticamente o `go.mod`. Use `go mod tidy` ou `go get` para adicionar dependências.
 {% endhint %}
+
+{% hint style="info" %}
+No Go 1.27, `go test` inclui a checagem `stdversion` por padrão. Ela aponta o uso de APIs da biblioteca padrão mais novas que a versão indicada pela diretiva `go` e pelas build tags do arquivo.
+{% endhint %}
+
+## Versões do Go e ferramentas
+
+* `go get go@1.27.0` — Define Go 1.27.0 como versão mínima do módulo
+* `go get toolchain@go1.27.1` — Sugere Go 1.27.1 para trabalhar no módulo; versões mais novas continuam permitidas
+* `GOTOOLCHAIN=go1.27.1 go test ./...` — Executa os testes com esse toolchain específico
+* `go get -tool <pacote>@<versão>` — Registra uma ferramenta no módulo (Go 1.24+)
+* `go tool <nome>` — Executa uma ferramenta registrada
+* `go list tool` — Lista os pacotes das ferramentas registradas
+* `go get tool` — Atualiza as ferramentas registradas
 
 ## Vendoring
 
@@ -62,18 +77,26 @@
 * `go mod edit -dropreplace=<old>` — Remove uma diretiva replace
 * `go mod edit -exclude=<module>@<versão>` — Exclui uma versão específica de um módulo
 * `go mod edit -retract=<versão>` — Retrai uma versão publicada (Go 1.16+)
+* `go mod tidy -diff` — Mostra as mudanças necessárias sem editar `go.mod` e `go.sum`; retorna status diferente de zero quando há diferenças (Go 1.23+)
+* `go fix -diff ./...` — Mostra as mudanças sugeridas pelos modernizadores; retorna status diferente de zero quando há sugestões (Go 1.26+)
+* `go fix ./...` — Aplica as modernizações; revise o diff e execute os testes (Go 1.26+)
+
+Com `go 1.27` ou superior no `go.mod`, o `go mod tidy` também reúne os requisitos em até dois blocos: dependências diretas e indiretas.
 
 ## Documentação
 
 * `go doc <pacote>` — Mostra a documentação de um pacote
 * `go doc <pacote>.<symbol>` — Mostra documentação de um símbolo específico
-* `go doc -http :8080` — Inicia um servidor de documentação local (Go 1.25+)
+* `go doc -http <pacote>` — Abre a documentação do pacote no navegador (Go 1.25+)
+* `go doc <pacote>@<versão> <símbolo>` — Consulta uma versão específica sem alterar as dependências do projeto (Go 1.27+)
+* `go doc -ex <pacote>` — Inclui exemplos executáveis na listagem da documentação (Go 1.27+)
+* `go doc bytes.ExampleBuffer` — Mostra o código de um exemplo (Go 1.27+)
 
 ## Padrões de pacotes úteis
 
 * `./...` — Todos os pacotes no módulo atual e subdiretórios
-* `all` — Todos os pacotes em todos os módulos da build list (Go 1.16+: mudou comportamento)
-* `work` — Todos os pacotes nos módulos do workspace (Go 1.25+)
+* `all` — Pacotes do módulo principal e suas dependências, incluindo as usadas pelos testes do módulo (para módulos com `go 1.16` ou superior)
+* `work` — Todos os pacotes nos módulos do workspace, ou no módulo principal quando não há workspace (Go 1.25+)
 * `std` — Todos os pacotes da biblioteca padrão
 
 ## Variáveis de ambiente importantes
@@ -91,7 +114,7 @@
 * `-mod=readonly` — Não permite modificações no `go.mod`
 * `-mod=vendor` — Usa o diretório vendor ao invés de baixar dependências
 * `-mod=mod` — Permite modificações no `go.mod` (comportamento padrão pré-1.16)
-* `-json` — Saída em formato JSON (disponível em vários comandos desde Go 1.24+)
+* `-json` — Saída em formato JSON; disponível em `go build` desde Go 1.24 e há mais tempo em `go list` e `go test`
 * `-modcacherw` — Deixa arquivos do cache de módulos com permissão de escrita
 * `-modfile=<arquivo>` — Usa um arquivo go.mod alternativo
 
@@ -129,8 +152,8 @@ go work init ./module1 ./module2
 # Adicionar um módulo ao workspace
 go work use ./module3
 
-# Build usando o workspace
-go build ./...
+# Build de todos os módulos do workspace (Go 1.25+)
+go build work
 ```
 
 ### Usar um fork ou versão local de uma dependência

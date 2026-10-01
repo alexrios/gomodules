@@ -14,49 +14,60 @@ func Hello() string {
 }
 ```
 
-Agora vamos fazer o teste:
+`quote.Hello()` escolhe a saudação conforme o idioma do ambiente. Para manter a comparação em inglês, ajuste também o teste:
 
-```text
-$ go test
-go: finding rsc.io/quote v1.5.2
-go: downloading rsc.io/quote v1.5.2
-go: extracting rsc.io/quote v1.5.2
-go: finding rsc.io/sampler v1.3.0
-go: finding golang.org/x/text v0.0.0-20170915032832-14c0d48ead0c
-go: downloading rsc.io/sampler v1.3.0
-go: extracting rsc.io/sampler v1.3.0
-go: downloading golang.org/x/text v0.0.0-20170915032832-14c0d48ead0c
-go: extracting golang.org/x/text v0.0.0-20170915032832-14c0d48ead0c
-PASS
-ok  	example.com/hello	0.023s
-$
+```go
+func TestHello(t *testing.T) {
+    t.Setenv("LC_ALL", "en")
+    want := "Hello, world."
+    if got := Hello(); got != want {
+        t.Errorf("Hello() = %q, want %q", got, want)
+    }
+}
 ```
 
-O comando go resolve importações usando as versões de módulo de dependência específicas listadas em `go.mod`. Ao encontrar um import de um pacote não fornecido por nenhum módulo em `go.mod`, o comando `go` procura automaticamente o módulo que contém esse pacote e o adiciona a `go.mod`, usando a versão mais recente. 
+Antes de testar, vamos adicionar a dependência. Usaremos uma versão específica para que você possa acompanhar o mesmo exemplo:
+
+```bash
+go get rsc.io/quote@v1.5.2
+go mod tidy
+go test
+```
+
+A saída do teste será parecida com esta:
+
+```text
+PASS
+ok  	example.com/hello	0.023s
+```
+
+O comando `go get` registra a versão pedida e os requisitos necessários. Depois, `go mod tidy` ajusta `go.mod` e `go.sum` aos imports do código e dos testes.
 
 {% hint style="info" %}
-“Mais recente” é definido como a versão estável mais recente tageada \(não pre-release\), ou então a versão pre-release tageada mais recente, ou então a versão não tageada mais recente.\) 
+Para pedir a versão mais recente, use `@latest`. O Go prefere a versão estável mais recente; quando não há uma, considera versões de pré-lançamento e, por último, o commit mais recente. Versões retraídas são desconsideradas nessa consulta.
 {% endhint %}
 
-Em nosso exemplo, `go test` resolveu a nova importação `rsc.io/quote` para o módulo `rsc.io/quote v1.5.2`. :
+Em nosso exemplo, a importação `rsc.io/quote` é fornecida pelo módulo `rsc.io/quote v1.5.2`. Continuando o módulo criado com Go 1.27.1, teremos:
 
 ```text
 $ cat go.mod
 module example.com/hello
 
-go 1.12
+go 1.27.1
 
 require rsc.io/quote v1.5.2
-$
+
+require (
+    golang.org/x/text v0.0.0-20170915032832-14c0d48ead0c // indirect
+    rsc.io/sampler v1.3.0 // indirect
+)
 ```
 
-{% hint style="warning" %}
-Apenas dependências diretas são registradas no arquivo go.mod. 
-
-Por isso motivo, mesmo tendo baixado duas dependências usadas por`rsc.io/quote`, nesse caso, `rsc.io/sampler` e `golang.org/x/text`, as mesmas não serão listadas no arquivo `go.mod`.
+{% hint style="info" %}
+Desde Go 1.17, o `go.mod` também registra os módulos que fornecem pacotes importados indiretamente. Aqui, `rsc.io/sampler` e `golang.org/x/text` são usados por `rsc.io/quote`, por isso aparecem com `// indirect`.
 {% endhint %}
 
-Um segundo comando `go test` não repetirá este trabalho, uma vez que o `go.mod` agora está atualizado e os módulos baixados são armazenados em cache local \(em `$GOPATH/pkg/mod`\):
+Um segundo comando `go test` pode reutilizar os arquivos do cache de build. Sem argumentos de pacote, ele executa os testes novamente; `go test ./...` também pode reutilizar resultados de testes bem-sucedidos. Os módulos baixados ficam no cache local \(em `$GOPATH/pkg/mod`\):
 
 ```text
 $ go test
@@ -96,4 +107,3 @@ $
 ```
 
 O comando `go` usa o arquivo `go.sum` para garantir que os downloads futuros desses módulos recuperem os mesmos bits do primeiro download, para garantir que os módulos dos quais seu projeto depende não mudem inesperadamente, seja por motivos maliciosos, acidentais ou outros. `go.mod` e `go.sum` **devem** ser commitados no controle de versão.
-

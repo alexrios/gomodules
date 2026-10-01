@@ -10,7 +10,7 @@ description: Gerenciamento automático de toolchains do Go desde a versão 1.21
 
 1. **Download automático** de versões do Go conforme necessário
 2. **Seleção inteligente** da versão correta para cada projeto
-3. **Compatibilidade futura** garantida para projetos
+3. **Requisitos mínimos** de versão respeitados
 
 {% hint style="success" %}
 Antes do Go 1.21, você precisava instalar manualmente cada versão do Go. Agora, o Go baixa e usa a versão correta automaticamente!
@@ -37,11 +37,11 @@ Go usa um esquema de versionamento estruturado:
 
 | Tipo | Formato | Exemplo |
 |------|---------|---------|
-| **Release** | `1.N.P` | `1.25.0` |
-| **Release Candidate** | `1.Nrc.R` | `1.25rc1` |
-| **Família de linguagem** | `1.N` | `1.25` |
+| **Release** | `1.N.P` | `1.27.0` |
+| **Release Candidate** | `1.NrcR` | `1.27rc1` |
+| **Família de linguagem** | `1.N` | `1.27` |
 
-**Ordem de versões**: `1.25 < 1.25rc1 < 1.25rc2 < 1.25.0 < 1.25.1`
+**Ordem de versões**: `1.27 < 1.27rc1 < 1.27rc2 < 1.27.0 < 1.27.1`
 
 ## Diretivas no go.mod
 
@@ -52,11 +52,11 @@ Declara a **versão mínima** do Go necessária:
 ```go
 module github.com/usuario/projeto
 
-go 1.25
+go 1.27.0
 ```
 
 **Comportamento**:
-- Toolchains **mais antigos** que `1.25` se recusarão a carregar este módulo
+- Toolchains **mais antigos** que `1.27.0` se recusarão a carregar este módulo
 - Toolchains **mais novos** podem usar este módulo normalmente
 - Ativa features de linguagem da versão especificada
 
@@ -67,16 +67,16 @@ Especifica um **toolchain preferido**:
 ```go
 module github.com/usuario/projeto
 
-go 1.25
-toolchain go1.25.3
+go 1.27.0
+toolchain go1.27.1
 ```
 
-**Comportamento**:
-- Se o toolchain atual for **mais antigo** que `go1.25.3`, faz upgrade automaticamente
+**Comportamento com `GOTOOLCHAIN=auto`**:
+- Se o toolchain atual for **mais antigo** que `go1.27.1`, faz upgrade automaticamente
 - Se o toolchain atual for **mais novo**, usa o atual (não faz downgrade)
 
 {% hint style="info" %}
-Se você especifica apenas `go 1.25.0` sem `toolchain`, é implicitamente equivalente a `toolchain go1.25.0`.
+Se você especifica apenas `go 1.27.0` sem `toolchain`, é implicitamente equivalente a `toolchain go1.27.0`.
 {% endhint %}
 
 ## Variável de ambiente GOTOOLCHAIN
@@ -111,12 +111,12 @@ GOTOOLCHAIN=local go build
 
 ```bash
 # Força uma versão específica
-GOTOOLCHAIN=go1.25.0 go test
+GOTOOLCHAIN=go1.27.0 go test
 ```
 
 **Comportamento**:
 - Usa **exclusivamente** a versão especificada
-- Procura `go1.25.0` no PATH primeiro
+- Procura `go1.27.0` no PATH primeiro
 - Baixa se não encontrar
 - **Ignora** diretivas `toolchain` no go.mod
 
@@ -124,26 +124,26 @@ GOTOOLCHAIN=go1.25.0 go test
 
 ```bash
 # Versão mínima com upgrade automático
-GOTOOLCHAIN=go1.25.0+auto
+GOTOOLCHAIN=go1.27.0+auto
 ```
 
 **Comportamento**:
-- Usa `go1.25.0` como **mínimo**
+- Usa `go1.27.0` como **mínimo**
 - Permite **upgrade** se projeto requer versão mais nova
 
 ### GOTOOLCHAIN=<name>+path
 
 ```bash
 # Versão mínima apenas do PATH
-GOTOOLCHAIN=go1.25.0+path
+GOTOOLCHAIN=go1.27.0+path
 ```
 
 **Comportamento**:
-- Usa `go1.25.0` como mínimo
+- Usa `go1.27.0` como mínimo
 - Permite upgrade **apenas** de versões encontradas no PATH
 - **Nunca** baixa toolchains
 
-## Como a seleção automática dunciona
+## Como a seleção automática funciona
 
 ### Fluxo de decisão
 
@@ -161,8 +161,8 @@ GOTOOLCHAIN=go1.25.0+path
    └─ SIM → Procede para seleção
 8. ↓
 9. Procura toolchain necessário:
-   ├─ 1º: Procura no PATH (ex: go1.25.3)
-   ├─ 2º: Baixa de golang.org/dl
+   ├─ 1º: Procura no PATH (ex: go1.27.1)
+   ├─ 2º: Baixa o módulo golang.org/toolchain via GOPROXY
    └─ 3º: Armazena em cache
 10. ↓
 11. Executa comando com toolchain correto
@@ -171,19 +171,19 @@ GOTOOLCHAIN=go1.25.0+path
 ### Exemplo prático
 
 ```bash
-# Você tem Go 1.24.0 instalado
+# Você tem Go 1.26.0 instalado
 $ go version
-go version go1.24.0 linux/amd64
+go version go1.26.0 linux/amd64
 
-# Seu projeto requer Go 1.25
+# Seu projeto requer Go 1.27
 $ cat go.mod
 module github.com/usuario/app
-go 1.25
+go 1.27.0
 
 # Ao executar go build:
 $ go build
-go: downloading go1.25.0 (linux/amd64)
-# ... build usa Go 1.25.0 automaticamente
+go: downloading go1.27.0 (linux/amd64)
+# ... build usa Go 1.27.0 automaticamente
 ```
 
 ## Downloads automáticos
@@ -193,7 +193,7 @@ go: downloading go1.25.0 (linux/amd64)
 Toolchains são baixados como **módulos** especiais:
 
 - **Caminho do módulo**: `golang.org/toolchain`
-- **Versionamento**: `v0.0.1-go1.25.0.linux-amd64`
+- **Versionamento**: `v0.0.1-go1.27.0.linux-amd64`
 - **Respeitam GOPROXY**: Podem ser servidos via proxy corporativo
 
 ### Localização do cache
@@ -203,7 +203,7 @@ Toolchains são baixados como **módulos** especiais:
 $GOPATH/pkg/mod/golang.org/toolchain@<versão>
 
 # Exemplo:
-~/.local/share/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.0.linux-amd64/
+~/.local/share/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.27.0.linux-amd64/
 
 # Listar toolchains baixados:
 ls $GOPATH/pkg/mod/golang.org/toolchain@*
@@ -215,14 +215,13 @@ ls $GOPATH/pkg/mod/golang.org/toolchain@*
 # Opção 1: Usar GOTOOLCHAIN=local
 export GOTOOLCHAIN=local
 
-# Opção 2: Bloquear no GOPROXY
-export GOPROXY=proxy.golang.org,direct|golang.org/toolchain=off
-
-# Opção 3: CI/CD - use versão específica
-export GOTOOLCHAIN=go1.25.0
+# Opção 2: Permitir troca apenas para toolchains encontrados no PATH
+export GOTOOLCHAIN=path
 ```
 
 ## Comandos de gerenciamento
+
+Desde Go 1.25, atualizar a linha `go` não adiciona automaticamente uma linha `toolchain` com a versão do comando em execução.
 
 ### Atualizar versões do Go
 
@@ -231,10 +230,10 @@ export GOTOOLCHAIN=go1.25.0
 go get go@latest
 
 # Atualizar para versão específica
-go get go@1.25.1
+go get go@1.27.1
 
 # Atualizar para release candidate
-go get go@1.26rc1
+go get go@1.27rc1
 
 # Ver versão atual no go.mod
 go mod edit -json | jq .Go
@@ -244,7 +243,7 @@ go mod edit -json | jq .Go
 
 ```bash
 # Definir toolchain específico
-go get toolchain@go1.25.3
+go get toolchain@go1.27.1
 
 # Atualizar para toolchain mais recente
 go get toolchain@latest
@@ -263,47 +262,41 @@ go work use -r .
 go work edit -toolchain=none
 
 # Atualizar Go no workspace
-go work edit -go=1.25
+go work edit -go=1.27.1
 ```
 
 ## Estratégia de seleção de versões
 
-### Minimal Version Selection (MVS)
+### Quando uma dependência exige um Go mais novo
 
-O Go aplica **MVS** (Seleção de Versão Mínima) para toolchains também:
+Com a troca automática habilitada, comandos como `go get` podem encontrar uma dependência que exige um Go mais novo. Nesse caso, o Go considera toolchains das versões suportadas e escolhe o mais antigo entre os candidatos que atendem ao requisito.
+
+Um exemplo hipotético:
 
 ```
-Módulo A requer: go 1.24rc1
-Módulo B requer: go 1.25.1
-Módulo C requer: go 1.25.3
+Dependência requer: go 1.26.0
 
-Toolchains disponíveis:
-- go1.27.9
-- go1.28.3
-- go1.29rc2
+Candidatos disponíveis:
+- go1.26.8
+- go1.27.1
 
-SELECIONADO: go1.27.9
-↑ Versão MAIS ANTIGA que satisfaz TODOS os requisitos
+SELECIONADO: go1.26.8
+↑ Candidato mais antigo que atende ao requisito
 ```
 
-### Por que MVS para Toolchains?
-
-- ✅ **Consistência** com seleção de módulos
-- ✅ **Estabilidade** (evita versões experimentais)
-- ✅ **Previsibilidade** (sempre o mesmo resultado)
+Essa escolha depende das versões disponíveis. Para repetir um build com um toolchain específico, configure uma versão exata no ambiente de execução.
 
 ## Casos de uso práticos
 
 ### Caso 1: Testar com Release Candidate
 
-```bash
-# Testar seu código com Go 1.26rc1
-GOTOOLCHAIN=go1.26rc1 go test ./...
+Este exemplo ilustra o teste durante o ciclo de lançamento. Depois da versão estável, prefira a versão estável para o trabalho diário.
 
-# Ou temporariamente no go.mod
-go get toolchain@go1.26rc1
-go test ./...
-go get toolchain@none  # Remover depois
+```bash
+# Testar seu código com Go 1.27rc1
+GOTOOLCHAIN=go1.27rc1 go test ./...
+
+# O módulo precisa declarar um mínimo compatível com esse RC
 ```
 
 ### Caso 2: CI/CD com versão fixa
@@ -319,27 +312,28 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.25'
+          go-version: '1.27.1'
 
       # Garantir que usa EXATAMENTE essa versão
-      - run: export GOTOOLCHAIN=local
       - run: go test ./...
+        env:
+          GOTOOLCHAIN: local
 ```
 
 ### Caso 3: Desenvolvimento multi-versão
 
 ```bash
 # Instalar múltiplas versões via go install
-go install golang.org/dl/go1.24.0@latest
-go install golang.org/dl/go1.25.0@latest
+go install golang.org/dl/go1.26.0@latest
+go install golang.org/dl/go1.27.0@latest
 
 # Baixar as versões
-go1.24.0 download
-go1.25.0 download
+go1.26.0 download
+go1.27.0 download
 
 # Usar versões específicas
-go1.24.0 build ./...
-go1.25.0 test ./...
+go1.26.0 build ./...
+go1.27.0 test ./...
 
 # Agora estão disponíveis no PATH!
 ```
@@ -350,25 +344,23 @@ go1.25.0 test ./...
 # Estrutura:
 monorepo/
 ├── go.work
-├── legacy-service/    # Requer go 1.23
-│   └── go.mod → go 1.23
-├── new-service/       # Requer go 1.25
-│   └── go.mod → go 1.25
-└── experimental/      # Requer go 1.26rc1
-    └── go.mod → go 1.26rc1
+├── legacy-service/    # Requer go 1.25.0
+│   └── go.mod
+├── new-service/       # Requer go 1.26.0
+│   └── go.mod
+└── experimental/      # Requer go 1.27.0
+    └── go.mod
 
-# go.work
-go 1.25  # Mínimo para o workspace
-
-# Cada módulo usa seu próprio toolchain automaticamente!
-cd legacy-service && go build    # Usa go 1.23
-cd ../new-service && go build    # Usa go 1.25
-cd ../experimental && go build   # Usa go 1.26rc1
+# Na raiz do monorepo:
+go work init ./legacy-service ./new-service ./experimental
+go test work
 ```
+
+O workspace usa um único toolchain por execução. A linha `go` do `go.work` precisa ser pelo menos tão nova quanto a de cada módulo listado. A versão da linguagem de cada módulo continua sendo definida pelo seu próprio `go.mod`.
 
 ## Compatibilidade retroativa
 
-### Go 1.21 Tornou a linha `go` obrigatória
+### Go 1.21 passou a exigir o mínimo declarado na linha `go`
 
 Antes de Go 1.21, a linha `go` era **consultiva**. Desde Go 1.21:
 
@@ -399,7 +391,7 @@ $ go build
 
 ## Troubleshooting
 
-### Erro: "toolchain not available"
+### Erro: módulo exige uma versão mais nova
 
 ```bash
 # Causa: GOTOOLCHAIN=local mas projeto requer versão mais nova
@@ -409,8 +401,8 @@ export GOTOOLCHAIN=auto
 go build
 
 # Solução 2: Instalar a versão necessária
-go install golang.org/dl/go1.25.0@latest
-go1.25.0 download
+go install golang.org/dl/go1.27.0@latest
+go1.27.0 download
 
 # Solução 3: Atualizar seu Go
 # Baixe de https://go.dev/dl/
@@ -437,20 +429,19 @@ export GOPROXY=https://proxy.empresa.com,direct
 ```bash
 # Problema: Desenvolvedores usando versões diferentes
 
-# Solução: Especificar toolchain exato no go.mod
-go get toolchain@go1.25.3
+# Sugerir uma versão para trabalhar no módulo
+go get toolchain@go1.27.1
 
-# Agora todos usarão exatamente go1.25.3
-git add go.mod
-git commit -m "Pin toolchain to go1.25.3"
+# Executar os testes com uma versão exata
+GOTOOLCHAIN=go1.27.1 go test ./...
 ```
 
 ## Melhores práticas
 
 ### ✅ Recomendado
 
-- Especifique `toolchain` em projetos críticos para builds reproduzíveis
-- Use `GOTOOLCHAIN=local` em CI/CD para builds determinísticos
+- Use `toolchain` para sugerir uma versão de desenvolvimento
+- Instale uma versão exata no CI/CD e use `GOTOOLCHAIN=local` para impedir a troca automática de toolchain
 - Documente requisitos de versão no README
 - Teste com release candidates antes de releases oficiais
 
@@ -486,11 +477,11 @@ git commit -m "Pin toolchain to go1.25.3"
 
 O gerenciamento automático de toolchains do Go 1.21+ é um **divisor de águas**:
 
-- 🎯 **Elimina** problemas de "works on my machine"
-- 🚀 **Simplifica** gestão de múltiplas versões
-- 🔒 **Garante** builds reproduzíveis
-- ⚡ **Automatiza** downloads e seleção de versões
+- **Explicita** os requisitos de versão do projeto
+- **Simplifica** gestão de múltiplas versões
+- **Permite** selecionar uma versão exata pelo ambiente
+- **Automatiza** downloads e seleção de versões
 
 {% hint style="success" %}
-Aproveite o poder dos toolchains! Especifique `toolchain` no seu `go.mod` para garantir que todos usem exatamente a mesma versão do Go.
+Use `go` para declarar o mínimo e `toolchain` para sugerir uma versão de desenvolvimento. Para exigir a mesma versão em uma execução, configure `GOTOOLCHAIN` com o nome exato ou instale essa versão e use `GOTOOLCHAIN=local`.
 {% endhint %}

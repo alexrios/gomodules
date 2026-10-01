@@ -44,12 +44,12 @@ import (
 ```go
 module github.com/usuario/projeto
 
-go 1.25
+go 1.27.0
 
 // Ferramentas de desenvolvimento
 tool (
     golang.org/x/tools/cmd/goimports
-    github.com/golangci/golangci-lint/cmd/golangci-lint
+    github.com/golangci/golangci-lint/v2/cmd/golangci-lint
     github.com/swaggo/swag/cmd/swag
 )
 ```
@@ -62,15 +62,15 @@ go get -tool golang.org/x/tools/cmd/goimports@latest
 
 # Adicionar múltiplas ferramentas
 go get -tool \
-    github.com/golangci/golangci-lint/cmd/golangci-lint@latest \
+    github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest \
     github.com/swaggo/swag/cmd/swag@latest \
     golang.org/x/tools/cmd/stringer@latest
 
 # Adicionar versão específica
-go get -tool github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.0
+go get -tool golang.org/x/tools/cmd/goimports@v0.38.0
 ```
 
-### Como executar uma `tool```
+### Como executar uma `tool`
 
 ```bash
 # Executar ferramenta registrada
@@ -84,12 +84,14 @@ go tool
 
 ## Exemplo
 
+A diretiva `tool` registra o pacote executável. O comando `go get -tool` também adiciona o módulo da ferramenta em `require`, com sua versão, e atualiza `go.sum`. Os trechos abaixo mostram a organização das diretivas; use o comando para gerar os requisitos completos.
+
 ### go.mod com `tool`
 
 ```go
 module github.com/empresa/api
 
-go 1.25
+go 1.27.0
 
 // Dependências de runtime
 require (
@@ -100,7 +102,7 @@ require (
 // Ferramentas de desenvolvimento
 tool (
     golang.org/x/tools/cmd/goimports
-    github.com/golangci/golangci-lint/cmd/golangci-lint
+    github.com/golangci/golangci-lint/v2/cmd/golangci-lint
     github.com/swaggo/swag/cmd/swag
     golang.org/x/tools/cmd/stringer
     github.com/google/wire/cmd/wire
@@ -111,7 +113,7 @@ tool (
 
 ```bash
 # 1. Clone o projeto
-git clone github.com/empresa/api
+git clone https://github.com/empresa/api
 cd api
 
 # 2. Baixe dependências E ferramentas
@@ -134,7 +136,7 @@ golangci-lint run  # Também disponível no PATH
 go get -tool <package>@<version>
 
 # Atualizar todas as ferramentas
-go get -tool -u all
+go get tool
 
 # Atualizar ferramenta específica
 go get -tool <package>@latest
@@ -143,7 +145,7 @@ go get -tool <package>@latest
 go get -tool <package>@none
 
 # Listar ferramentas
-go list -m -tool all
+go list tool
 ```
 
 ### Executar `tool`
@@ -154,7 +156,7 @@ go tool <nome> [args]
 
 # Instalar no GOBIN
 go install tool  # Instala todas
-go install tool <package>  # Instala uma específica
+go install <package>  # Instala uma específica na versão selecionada pelo módulo
 
 # Executar diretamente (se instalada)
 goimports -w .
@@ -165,11 +167,14 @@ goimports -w .
 | Aspecto | tools.go (antigo) | tool (Go 1.24+) |
 |---------|-------------------|-----------------|
 | **Clareza** | Obscuro | Explícito e oficial |
-| **Separação** | Misturado com deps | Separado claramente |
+| **Requisitos de versão** | Compartilham o grafo do projeto | Compartilham o grafo do projeto |
 | **Execução** | `go run` manual | `go tool` integrado |
-| **Cache** | Não | Sim (builds mais rápidos) |
+| **Cache** | Depende do comando e da versão do Go | Executável mantido no build cache |
 | **Padrão** | Hack não oficial | Suporte oficial |
-| **IDEs** | Suporte limitado | Suporte nativo |
+
+{% hint style="info" %}
+Confira também a instalação recomendada pela ferramenta. O [golangci-lint recomenda seus binários oficiais](https://golangci-lint.run/docs/welcome/install/local/) e, caso seja usado com `go tool`, um módulo separado para evitar alterações no seu grafo de dependências.
+{% endhint %}
 
 ## Casos de uso comuns
 
@@ -177,7 +182,7 @@ goimports -w .
 
 ```go
 tool (
-    github.com/golangci/golangci-lint/cmd/golangci-lint
+    github.com/golangci/golangci-lint/v2/cmd/golangci-lint
     golang.org/x/tools/cmd/goimports
     mvdan.cc/gofumpt
 )
@@ -231,20 +236,14 @@ go tool mockgen -source=interface.go
 
 ## Cache de ferramentas
 
-Go 1.24+ cacheia execuções de ferramentas no build cache:
+Go 1.24+ mantém os executáveis das ferramentas no build cache. O comando continua executando a ferramenta a cada chamada; o que pode ser reaproveitado é a compilação.
 
 ```bash
-# Primeira execução: lenta
-go tool golangci-lint run
-# Tempo: 5s
-
-# Segunda execução: rápida (cache)
-go tool golangci-lint run
-# Tempo: 0.1s
-
-# Limpar cache se necessário
-go clean -cache
+go tool goimports -l .
+go tool goimports -l .
 ```
+
+O tempo depende da compilação e do trabalho realizado pela ferramenta. No Go 1.27, `go tool` também mostra os nomes curtos disponíveis para ferramentas declaradas no módulo. Um nome curto só pode ser usado quando identifica uma única ferramenta.
 
 ## Integração com CI/CD
 
@@ -260,7 +259,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.25'
+          go-version: '1.27.1'
 
       # Ferramentas são baixadas automaticamente
       - run: go mod download
@@ -305,19 +304,19 @@ all: tools fmt generate lint test
 
 ### O Desafio
 
-Ferramentas podem ter dependências conflitantes com seu projeto:
+Ferramentas participam do mesmo grafo de dependências do projeto. Um requisito maior pode mudar a versão usada pelos dois:
 
 ```
 Seu projeto: require github.com/pkg/errors v0.9.1
 Ferramenta:  require github.com/pkg/errors v0.8.0
 
-❌ CONFLITO!
+Versão selecionada pelo MVS: v0.9.1
 ```
 
-### Solução 1: Aceitar o conflito (simples)
+### Solução 1: Usar a versão selecionada pelo MVS
 
 ```bash
-# MVS escolhe a versão mais nova
+# MVS escolhe o maior requisito entre os módulos envolvidos
 # Geralmente funciona bem
 go mod tidy
 ```
@@ -325,24 +324,15 @@ go mod tidy
 ### Solução 2: go.mod separado (avançado)
 
 ```bash
-# Criar tools/go.mod separado
+# Criar um módulo separado para ferramentas
 mkdir tools
 cd tools
-
-cat > go.mod << 'EOF'
-module tools
-go 1.25
-
-tool (
-    github.com/golangci/golangci-lint/cmd/golangci-lint
-)
-EOF
-
-go mod download
-
-# Usar com -modfile
+GOWORK=off go mod init example.com/projeto/tools
+GOWORK=off go get -tool golang.org/x/tools/cmd/goimports@v0.38.0
 cd ..
-go tool -modfile=tools/go.mod golangci-lint run
+
+# Usar seu arquivo de requisitos a partir da raiz do projeto
+GOWORK=off go tool -modfile=tools/go.mod goimports -l .
 ```
 
 ## Migrando de tools.go
@@ -356,7 +346,7 @@ package tools
 
 import (
     _ "golang.org/x/tools/cmd/goimports"
-    _ "github.com/golangci/golangci-lint/cmd/golangci-lint"
+    _ "github.com/golangci/golangci-lint/v2/cmd/golangci-lint"
 )
 ```
 
@@ -366,7 +356,7 @@ import (
 // go.mod
 tool (
     golang.org/x/tools/cmd/goimports
-    github.com/golangci/golangci-lint/cmd/golangci-lint
+    github.com/golangci/golangci-lint/v2/cmd/golangci-lint
 )
 ```
 
@@ -378,7 +368,7 @@ rm tools.go
 
 # 2. Adicionar ferramentas via go get -tool
 go get -tool golang.org/x/tools/cmd/goimports@latest
-go get -tool github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+go get -tool github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 
 # 3. Limpar go.mod
 go mod tidy
@@ -443,7 +433,7 @@ go tool <ferramenta> # Reconstrói cache
 
 ## Recursos adicionais
 
-- [Go 1.24 Release Notes](https://tip.golang.org/doc/go1.24)
+- [Go 1.24 Release Notes](https://go.dev/doc/go1.24)
 - [Proposal: Tool Dependencies](https://go.googlesource.com/proposal/+/54d6775ff71ccbc00c276db2a4e4841d67011cf4/design/48429-go-tool-modules.md)
 - [Blog: How to Use the New tool Directive](https://www.bytesizego.com/blog/go-124-tool-directive)
 - [Alex Edwards: Managing Tool Dependencies in Go 1.24+](https://www.alexedwards.net/blog/how-to-manage-tool-dependencies-in-go-1.24-plus)

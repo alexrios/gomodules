@@ -13,6 +13,6 @@ Em suma, a relação entre repositórios, módulos e pacotes se dá da seguinte 
 
 Módulos precisam ser versionados semanticamente de acordo com `semver`, geralmente na forma `v(major).(minor).(patch)`, como `v0.1.0`, `v1.2.3`, or `v1.5.0-rc.1`.
 O "v" inicial é obrigatório. Se estiver utilizando _git_, adicione _tags_ de versão aos seus _commits_.
-É possível utilizar repositórios privados, ver [Como usar libs privadas?](../tutoriais/como-usar-libs-privadas-no-github-actions.md).   
+É possível utilizar repositórios privados, ver [Como usar libs privadas?](../tutoriais/usando-libs-privadas.md).
 
 

@@ -46,7 +46,7 @@ go work init ./app ./library
 O arquivo `go.work` tem sintaxe similar ao `go.mod`:
 
 ```
-go 1.25
+go 1.27.0
 
 use (
     ./app
@@ -62,10 +62,10 @@ replace golang.org/x/net => example.com/fork/net v1.4.5
 
 | Diretiva | Descrição | Exemplo |
 |----------|-----------|---------|
-| `go` | Versão do Go para interpretar o arquivo | `go 1.25` |
+| `go` | Versão mínima do Go para o workspace | `go 1.27.0` |
 | `use` | Módulos ativos no workspace | `use ./module-path` |
 | `replace` | Sobrescreve módulos (opcional) | `replace foo => bar v1.0.0` |
-| `toolchain` | Especifica toolchain do Go (Go 1.21+) | `toolchain go1.25.0` |
+| `toolchain` | Sugere um toolchain do Go (Go 1.21+) | `toolchain go1.27.1` |
 
 ## Como funciona?
 
@@ -77,7 +77,7 @@ Quando um arquivo `go.work` existe, o comando `go`:
 4. **Sincroniza dependências** entre os módulos quando solicitado
 
 {% hint style="info" %}
-O arquivo `go.work` é **local** e **não deve ser commitado** no repositório. Adicione `go.work` ao `.gitignore`.
+Para um workspace pessoal, adicione `go.work` e `go.work.sum` ao `.gitignore`. Em um monorepo com um workspace compartilhado, versionar esses arquivos pode fazer sentido. Teste também cada módulo com `GOWORK=off` antes de publicá-lo.
 {% endhint %}
 
 ## Criando um Workspace
@@ -169,10 +169,13 @@ go run .
 ### Modificando a biblioteca
 
 ```bash
-# Adicionar uma nova função em stringutil/reverse.go
-cd stringutil
+# A partir do diretório app, criar outro arquivo na biblioteca
+cd ../stringutil
 
-cat >> reverse.go << 'EOF'
+cat > upper.go << 'EOF'
+package stringutil
+
+import "strings"
 
 func ToUpper(s string) string {
     return strings.ToUpper(s)
@@ -200,8 +203,9 @@ go work init
 # Inicializar com módulos
 go work init ./module1 ./module2 ./module3
 
-# Inicializar especificando versão do Go
-go work init -go=1.25 ./module1
+# Inicializar e depois definir o mínimo do workspace
+go work init ./module1
+go work edit -go=1.27.1
 ```
 
 ### go work use
@@ -246,10 +250,10 @@ go work edit -replace golang.org/x/net=../my-net
 go work edit -dropreplace golang.org/x/net
 
 # Definir versão do Go
-go work edit -go=1.25
+go work edit -go=1.27.1
 
 # Adicionar toolchain
-go work edit -toolchain=go1.25.1
+go work edit -toolchain=go1.27.1
 ```
 
 ### go work vendor (Go 1.22+)
@@ -260,9 +264,22 @@ Cria um diretório `vendor` para o workspace inteiro:
 # Cria vendor/ com todas as dependências do workspace
 go work vendor
 
-# Build usando o vendor
-go build -mod=vendor ./...
+# Build de todos os módulos usando o vendor (Go 1.25+)
+go build -mod=vendor work
 ```
+
+## Testar todos os módulos
+
+Desde Go 1.25, o padrão `work` inclui os pacotes de todos os módulos do workspace:
+
+```bash
+go build work
+go test work
+```
+
+O padrão `./...` é relativo ao diretório atual. Se a raiz do workspace não é um módulo, use `work` ou caminhos como `./app/... ./library/...`.
+
+No Go 1.27, `go work use -r .` também ignora diretórios `vendor`. A linha `go` do workspace precisa atender à versão mínima de todos os módulos listados em `use`.
 
 ## Variáveis de Ambiente
 
@@ -367,14 +384,14 @@ Mesmo após publicar, o workspace continua usando a versão local para desenvolv
 
 ### ✅ Faça
 
-- Adicione `go.work` e `go.work.sum` ao `.gitignore`
+- Adicione `go.work` e `go.work.sum` ao `.gitignore` quando o workspace for pessoal
 - Use workspace para desenvolvimento local
 - Documente no README como configurar o workspace para novos desenvolvedores
 - Use `go work sync` periodicamente para manter dependências sincronizadas
 
 ### ❌ Não faça
 
-- **Nunca comite** `go.work` no repositório (é pessoal)
+- Não versione um workspace pessoal como se fosse a configuração compartilhada do projeto
 - Não confie em workspace para builds de produção
 - Não use replace no `go.work` se puder evitar (prefira no `go.mod` se necessário)
 - Não esqueça de testar sem o workspace antes de release
@@ -418,11 +435,11 @@ GOWORK=off go build ./...
 
 ## go.work.sum
 
-Similar ao `go.sum`, o arquivo `go.work.sum` contém checksums das dependências usadas no workspace.
+O `go.work.sum` registra hashes necessários ao workspace que não aparecem nos arquivos `go.sum` dos módulos principais. Ele complementa esses arquivos, sem substituí-los.
 
 ```bash
 # É criado automaticamente
-# Também deve ser adicionado ao .gitignore
+# Para um workspace pessoal, adicione ao .gitignore
 echo "go.work" >> .gitignore
 echo "go.work.sum" >> .gitignore
 ```
@@ -433,9 +450,9 @@ echo "go.work.sum" >> .gitignore
 |----------------|------------------|---------------------|
 | **Onde** | Dentro do módulo | Fora dos módulos |
 | **Escopo** | Um módulo | Múltiplos módulos |
-| **Commit** | Sim (com cuidado) | Não (sempre local) |
+| **Commit** | Sim (com cuidado) | Depende de ser pessoal ou compartilhado |
 | **Uso** | Override permanente | Desenvolvimento local |
-| **Afeta CI** | Sim | Não |
+| **Afeta CI** | Sim | Sim, se estiver presente e habilitado |
 
 ## Recursos Adicionais
 

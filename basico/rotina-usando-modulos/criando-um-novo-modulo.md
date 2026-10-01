@@ -30,7 +30,7 @@ func TestHello(t *testing.T) {
 Neste ponto, o diretório contém um pacote, mas não um módulo, porque não há um arquivo `go.mod`.
 
 {% hint style="warning" %}
-**Desde Go 1.16**, é obrigatório ter um arquivo `go.mod` para trabalhar com Go. Se você tentar executar `go test` sem um `go.mod`, receberá um erro.
+**Desde Go 1.16**, o modo de módulos é o padrão. Neste tutorial, `go test` precisa de um `go.mod` no diretório atual ou em um diretório pai. O modo GOPATH ainda existe com `GO111MODULE=off`, mas vamos trabalhar com módulos.
 {% endhint %}
 
 Se estivéssemos trabalhando em /home/gopher/hello e executássemos o teste sem um `go.mod`, veríamos um erro solicitando que você execute `go mod init` primeiro.
@@ -50,13 +50,13 @@ $
 Parabéns! Você escreveu e testou seu primeiro módulo.
 {% endhint %}
 
-O comando `go mod init` escreveu um arquivo go.mod:
+Executando o exemplo com Go 1.27.1, o comando `go mod init` escreveu um arquivo go.mod:
 
 ```text
 $ cat go.mod
 module example.com/hello
 
-go 1.25
+go 1.27.1
 $
 ```
 
@@ -64,3 +64,6 @@ $
 A diretiva `go` no arquivo `go.mod` indica a versão mínima do Go necessária para compilar este módulo. Desde Go 1.21, o Go pode automaticamente baixar e usar a versão correta do toolchain se necessário.
 {% endhint %}
 
+No Go 1.27, essa linha começa com a versão do toolchain que executou `go mod init`, incluindo o patch. Se você precisa atender uma versão anterior, pode ajustar o requisito com `go get go@1.26.0` e testar com essa versão. O código e as dependências também precisam ser compatíveis com ela.
+
+As notas do Go 1.26 descrevem um padrão diferente, que escolhia uma versão anterior. Essa mudança foi revertida no Go 1.27. Veja os detalhes no [histórico dessas versões](../../releases/1.26-1.27.md).

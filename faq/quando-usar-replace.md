@@ -14,7 +14,12 @@ A diretiva `replace` permite que você forneça outro caminho de importação \(
 
 Você também pode fazer referência a branches, por exemplo:
 
-* `replace example.com/some/dependency => example.com/some/dependency-fork master`
+```bash
+versao=$(go list -m -f '{{.Version}}' example.com/some/dependency-fork@master)
+go mod edit -replace=example.com/some/dependency=example.com/some/dependency-fork@"$versao"
+```
+
+O `go list` consulta a branch e retorna uma versão canônica, que pode ser uma pseudo-versão. O `go mod edit` grava essa versão na substituição. O nome `master` não deve permanecer como versão em um `go.mod` publicado.
 
 Um exemplo de caso de uso é: se você precisar corrigir ou investigar algo em uma dependência, pode ter um fork local e adicionar algo como o seguinte em seu `go.mod` do seu módulo principal:
 
@@ -34,11 +39,11 @@ Em geral, você tem a opção de especificar uma versão à esquerda de =&gt; em
 
 Você pode confirmar que está obtendo as versões esperadas executando `go list -m all`, que mostra as versões finais reais que serão usadas em sua construção, incluindo a consideração de instruções de `replace`.
 
-{% hint style="danger" %}
-No Go 1.11, para dependências diretas, uma diretiva `require` é necessária mesmo se for feito um `replace`. Por exemplo, se `foo` é uma dependência direta, você não pode `replace foo => ../foo` sem um `require` correspondente para `foo`. Se você não tiver certeza de qual versão usar na diretiva `require`, você pode frequentemente usar `v0.0.0`, como `require foo v0.0.0`. Isso foi corrigido na versão 1.12 com [\#26241](https://golang.org/issue/26241).
+{% hint style="info" %}
+Uma diretiva `replace` sozinha não adiciona um módulo ao grafo de dependências. Para usar o pacote substituído, mantenha um requisito `require` correspondente, diretamente ou por uma dependência. Para uma substituição local de um módulo v0 ou v1, `v0.0.0` pode servir como versão nesse requisito.
 {% endhint %}
 
-Consulte o próximo FAQ para obter os detalhes de como usar `replace` para funcionar inteiramente fora do versionador de código.
+Veja o [FAQ sobre trabalho sem versionador de código](posso-trabalhar-totalmente-sem-um-versionador-de-codigo-em-meu-sistema-de-arquivos-local.md). Para desenvolver vários módulos juntos, também existe o [Workspace Mode](../avancado/workspace-mode.md), disponível desde Go 1.18.
 
 
 

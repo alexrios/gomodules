@@ -1,0 +1,13 @@
+# GitBook / HonKit build output
+_book/
+
+# IDEs
+.idea/
+*.swp
+*.swo
+*~
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

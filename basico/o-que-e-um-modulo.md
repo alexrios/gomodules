@@ -3,7 +3,7 @@
 Um módulo é uma coleção de pacotes Go relacionados. Sendo uma unidade de código\(s\)-fonte versionável e intercambiavel.
 
 {% hint style="info" %}
-**Desde Go 1.16** (fevereiro de 2021), módulos são **obrigatórios** e o modo padrão do Go. A antiga abordagem baseada em GOPATH foi descontinuada.
+**Desde Go 1.16** (fevereiro de 2021), o modo de módulos é o **padrão** do Go. Para trabalhar nesse modo, crie um arquivo `go.mod`. A abordagem baseada em GOPATH ainda pode ser selecionada com `GO111MODULE=off`.
 {% endhint %}
 
 Módulos tem 2 principais objetivos:

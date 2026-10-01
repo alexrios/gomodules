@@ -52,4 +52,5 @@
 * [1.16-1.17: Lazy Loading Era](releases/1.16-1.17.md)
 * [1.18-1.21: Workspace & Toolchain Era](releases/1.18-1.21.md)
 * [1.22-1.25: Modern Features Era](releases/1.22-1.25.md)
+* [1.26-1.27: Compatibilidade e manutenção](releases/1.26-1.27.md)
 

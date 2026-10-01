@@ -1,5 +1,5 @@
 ---
-description: Banco de dados de checksums do Go (sum.golang.org) que garante autenticidade e integridade de módulos
+description: Banco de dados de checksums do Go (sum.golang.org) para conferir a consistência do conteúdo de versões públicas
 ---
 
 # Checksum Database
@@ -16,7 +16,7 @@ Embora o arquivo `go.sum` contenha hashes SHA-256 das dependências baixadas, el
 - Não há garantia de que diferentes desenvolvedores recebam o mesmo código
 - Um servidor malicioso poderia entregar código diferente para diferentes pessoas
 
-O Checksum Database resolve este problema garantindo que **todos os desenvolvedores no mundo recebam exatamente o mesmo código para uma mesma versão de módulo**.
+O Checksum Database permite detectar quando o conteúdo recebido diverge do hash registrado para uma versão pública. Isso confere a consistência do conteúdo; não garante que o código publicado seja seguro ou livre de bugs.
 
 ## Como funciona?
 
@@ -33,10 +33,10 @@ O comando `go` utiliza duas formas de verificação:
 
 ### Endpoints da API
 
-O Checksum Database oferece dois endpoints principais:
+Entre os endpoints do Checksum Database estão:
 
-- **`/lookup`**: Retorna um "signed tree head" (STH) e as linhas `go.sum` solicitadas
-- **`/tile`**: Fornece pedaços da árvore chamados "tiles" que o comando `go` usa para gerar provas criptográficas
+- **`/lookup/<módulo>@<versão>`**: Retorna um "signed tree head" (STH) e as linhas `go.sum` solicitadas
+- **`/tile/...`**: Fornece pedaços da árvore chamados "tiles" que o comando `go` usa para gerar provas criptográficas
 
 ## Fluxo de trabalho
 
@@ -44,8 +44,8 @@ Quando você executa comandos como `go get` ou `go mod download`:
 
 1. O comando `go` baixa o código-fonte do módulo
 2. Calcula o hash SHA-256 do código
-3. Consulta o **sum.golang.org** para obter o hash esperado
-4. Compara os dois hashes:
+3. Usa o hash correspondente de `go.sum` ou consulta o checksum database, que pode responder a partir do cache ou por um proxy
+4. Valida o registro no log e compara os hashes:
    - ✅ Se coincidirem: adiciona ao `go.sum` e continua
    - ❌ Se divergirem: reporta o erro e interrompe a execução
 
@@ -67,7 +67,7 @@ Mesmo que um atacante comprometa um servidor proxy ou origin, ele **não pode** 
 
 ### 2. Imutabilidade de versões
 
-Nem mesmo os **autores dos módulos** podem alterar o código de uma versão já publicada sem que o Checksum Database detecte a mudança. Isso garante que `v1.2.3` sempre será exatamente o mesmo código, para sempre.
+Nem mesmo os **autores dos módulos** podem alterar o código de uma versão já publicada sem que o Checksum Database detecte a mudança. Um download que diverge do hash registrado para `v1.2.3` é rejeitado, mesmo que a tag tenha sido alterada no repositório original.
 
 ### 3. Verificação global
 
@@ -87,8 +87,10 @@ GOSUMDB="sum.golang.org"
 GOSUMDB=off
 
 # Usar servidor customizado
-GOSUMDB="meu-servidor.com"
+GOSUMDB="meu-servidor.com+<chave-publica> https://meu-servidor.com"
 ```
+
+A chave pública precisa ser fornecida para um servidor próprio. O Go já conhece a chave de `sum.golang.org`.
 
 ⚠️ **Atenção**: Desabilitar o GOSUMDB reduz significativamente a segurança do seu projeto.
 
@@ -103,7 +105,7 @@ GONOSUMDB="github.com/minhaempresa/*,gitlab.interno/*"
 
 ### GOPRIVATE
 
-Define módulos privados (implica em `GONOSUMDB` e `GONOPROXY`):
+Define os padrões usados como valor padrão de `GONOSUMDB` e `GONOPROXY`, quando essas variáveis não foram configuradas explicitamente:
 
 ```bash
 # Maneira recomendada para módulos privados
@@ -112,47 +114,40 @@ GOPRIVATE="github.com/minhaempresa/*"
 
 ## Quando o Checksum Database é consultado?
 
-O checksum database é consultado quando:
+O Go consulta o checksum database quando precisa autenticar um arquivo `.mod` ou `.zip` cujo hash ainda não consta em `go.sum`, desde que a verificação esteja habilitada e o módulo não corresponda a `GONOSUMDB`. `GOPRIVATE` fornece o padrão de `GONOSUMDB` quando essa variável não foi definida.
 
-- ✅ O módulo é **público**
-- ✅ O módulo **não está** em `go.sum`
-- ✅ O módulo **não corresponde** aos padrões em `GONOSUMDB`/`GOPRIVATE`
-- ✅ `GOSUMDB` **não está** definido como `off`
-
-O checksum database **NÃO** é consultado quando:
-
-- ❌ O módulo já está em `go.sum`
-- ❌ O módulo está em `GOPRIVATE`
-- ❌ O módulo corresponde a `GONOSUMDB`
-- ❌ `GOSUMDB=off`
+A consulta pode usar registros já armazenados no cache ou ser intermediada pelo proxy. Um hash do arquivo `go.mod` não substitui o hash do conteúdo do módulo: são entradas diferentes em `go.sum`.
 
 ## Verificação manual
 
-Você pode verificar manualmente um módulo usando:
+Para baixar uma versão e conferir o hash pelos mecanismos configurados:
 
 ```bash
-# Verificar se o módulo está no checksum database
-go mod verify
-
-# Para Go 1.12 ou anterior, use a ferramenta gosumcheck
-go get golang.org/x/mod/gosumcheck
-gosumcheck /caminho/para/go.sum
+go mod download -json rsc.io/quote@v1.5.2
 ```
+
+Para conferir se os módulos no cache local foram alterados desde o download:
+
+```bash
+go mod verify
+```
+
+O `verify` compara os arquivos zip e os diretórios extraídos com os hashes registrados no próprio cache. Ele não consulta o checksum database para verificar esses conteúdos, nem usa as entradas de `go.sum` nessa comparação. Veja [go mod verify](https://go.dev/ref/mod#go-mod-verify).
 
 ## Histórico
 
 | Versão | Data | Mudança |
 |--------|------|---------|
 | Go 1.13 | Agosto 2019 | Lançamento oficial do sum.golang.org como produção |
-| Go 1.12 | Fevereiro 2019 | Suporte experimental via `GOSUMDB` |
+| Go 1.12 | Fevereiro 2019 | `proxy.golang.org` disponível para testes públicos |
 
 ## Comparação: go.sum vs Checksum Database
 
 | Característica | go.sum | Checksum Database |
 |----------------|--------|-------------------|
 | **Escopo** | Local do projeto | Global (todos os desenvolvedores) |
-| **Verificação** | Primeira vez: nenhuma | Sempre contra fonte de verdade |
-| **Segurança** | Confiança no primeiro uso | Verificação criptográfica |
+| **Verificação** | Hashes esperados pelo projeto | Registro global usado quando falta o hash em go.sum |
+| **Segurança** | Hashes autenticados no download, quando sumdb está habilitado | Log assinado e provas criptográficas |
 | **Detecta** | Mudanças locais | Mudanças globais + ataques direcionados |
 | **Estrutura** | Arquivo texto simples | Merkle tree (Transparent Log) |
 
@@ -167,16 +162,16 @@ gosumcheck /caminho/para/go.sum
 
 ### Meus módulos privados são enviados para sum.golang.org?
 
-**Não**. Módulos que correspondem a `GOPRIVATE` ou `GONOSUMDB` nunca são consultados no checksum database. O servidor nunca vê seus módulos privados.
+Com `GONOSUMDB` configurado para esses módulos, o Go não faz essa consulta. `GOPRIVATE` fornece esse padrão, mas uma configuração explícita de `GONOSUMDB` pode substituí-lo. Confira os padrões para evitar enviar caminhos privados ao serviço público.
 
 ### O que acontece se sum.golang.org estiver fora do ar?
 
-O comando `go` tentará usar checksums já presentes em `go.sum`. Para novos módulos, a operação falhará até que o serviço volte. Você pode configurar um mirror ou, em último caso, usar `GOSUMDB=off` temporariamente.
+O comando `go` tentará usar checksums já presentes em `go.sum`. Se não houver um hash em `go.sum` nem registros suficientes no cache do checksum database, a operação falhará até que o serviço volte. Você pode configurar um mirror ou, em último caso, usar `GOSUMDB=off` temporariamente.
 
 ### Posso hospedar meu próprio checksum database?
 
-Sim! Você pode configurar sua própria instância usando ferramentas como [Athens](https://docs.gomods.io/) ou implementar um servidor compatível com o protocolo do sumdb.
+Sim! É preciso um servidor compatível com o protocolo do sumdb e configurar sua chave pública em `GOSUMDB`. Um proxy de módulos, como Athens, desempenha outra função: servir arquivos de módulos, podendo também intermediar consultas ao checksum database.
 
 ### O checksum database conhece todo o código do meu projeto?
 
-Não. O database apenas armazena **hashes** criptográficos. Ele não tem acesso ao código-fonte, apenas aos checksums e metadados de módulos públicos.
+Não. O database apenas armazena **hashes** criptográficos. O serviço calcula hashes a partir de versões públicas obtidas pelo mirror. Ele não recebe o código do módulo principal do seu projeto durante uma consulta.

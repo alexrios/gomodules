@@ -32,13 +32,12 @@ func TestProverb(t *testing.T) {
 }
 ```
 
-Então podemos testar nosso código:
+Adicionamos a nova dependência e então testamos nosso código:
 
 ```text
+$ go get rsc.io/quote/v3@v3.1.0
+$ go mod tidy
 $ go test
-go: finding rsc.io/quote/v3 v3.1.0
-go: downloading rsc.io/quote/v3 v3.1.0
-go: extracting rsc.io/quote/v3 v3.1.0
 PASS
 ok  	example.com/hello	0.024s
 $

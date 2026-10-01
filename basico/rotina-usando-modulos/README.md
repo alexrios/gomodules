@@ -3,13 +3,15 @@
 Seu fluxo de trabalho para um dia típico:
 
 * Adicione os imports nos seus arquivo `.go` conforme necessidade.
-* Os comandos `go build` ou `go test` **baixarão** as novas dependências necessárias
+* Use `go get <pacote>@<versão>` para adicionar uma dependência ou escolher sua versão.
+* Execute `go mod tidy` para ajustar os requisitos aos imports.
+* Execute `go test ./...` e `go build ./...` para verificar o resultado.
 
 {% hint style="warning" %}
 **Mudança importante desde Go 1.16**: Comandos de build como `go build`, `go test` e `go run` **não modificam mais automaticamente** o arquivo `go.mod`. Para adicionar ou atualizar dependências, use `go get` ou `go mod tidy`.
 {% endhint %}
 
-Haverá momentos onde será necessário escolher versões especificas da dependência. Em casos como esses deve ser usado o comando `go get` ou `go mod tidy`.
+Haverá momentos onde será necessário escolher versões especificas da dependência. Em casos como esses use `go get <pacote>@<versão>`.
 
 O formato do comando go get é `<nome-do-modulo>@<versão>`
 
@@ -36,7 +38,7 @@ $ go mod tidy
 # Atualizar uma dependência para a versão mais recente
 $ go get -u foo
 
-# Atualizar todas as dependências diretas
+# Atualizar dependências dos pacotes do módulo, incluindo indiretas
 $ go get -u ./...
 
 # Verificar atualizações disponíveis

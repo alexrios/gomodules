@@ -29,29 +29,31 @@ Como, por exemplo: [https://proxy.golang.org/rsc.io/quote/@v/v1.5.1.mod](https:/
 O download do pacote pode ser feito diretamente através do:
 
 ```text
-$ GET $GOPROXY/<module>/@v/.zip
+$ GET $GOPROXY/<module>/@v/<version>.zip
 ```
 
 Como, por exemplo: [https://proxy.golang.org/rsc.io/quote/@v/v1.5.1.zip](https://proxy.golang.org/rsc.io/quote/@v/v1.5.1.zip)
 
 ### Para que serve o proxy? 
 
-Do ponto de vista de uso, o `go build` irá realizar as operações da sessão anterior automaticamente. Então temos uma situação interessante, o proxy armazena versões de cada pacote, ou seja, se por ventura o pacote original sair do ar, suas dependências não irão quebrar e caso alguém injete código malicioso a versão do proxy não é afetada!
+Do ponto de vista de uso, comandos como `go build` fazem os downloads necessários automaticamente quando os requisitos já estão no `go.mod`. O proxy armazena versões de módulos e pode continuar servindo uma versão mesmo quando o repositório original está indisponível. Isso depende da disponibilidade e da política do proxy.
+
+Os hashes em `go.sum` e no [Checksum Database](checksum-database.md) permitem detectar alterações no conteúdo recebido. O cache de um proxy não garante que o código seja livre de vulnerabilidades.
 
 ### Configurando o proxy
 
-Por padrão o go irá utilizar o repositório [oficial](https://index.golang.org/index), porém é possivel configurar outros repositórios conforme a sua necessidade. Um exemplo seria um desenvolvedor utilizando o proxy chinês, para go 1.13 ou superior:
+Desde Go 1.13, o padrão é `https://proxy.golang.org,direct`. O [índice de módulos](https://index.golang.org/index) é um serviço separado, usado para descobrir versões publicadas.
 
-```text
-$ go env -w GO111MODULE=on
-$ go env -w GOPROXY=https://goproxy.cn,direct
+```bash
+go env GOPROXY
+
+# Configurar outro proxy
+go env -w GOPROXY=https://goproxy.cn,direct
 ```
 
-Em caso de versões anteriores é preciso trabalhar com variáveis de ambiente: 
+Com uma vírgula, o Go tenta a próxima entrada apenas quando o proxy responde `404` ou `410`. Com `|`, tenta a próxima entrada em qualquer erro. `direct` significa buscar diretamente no repositório, usando um VCS permitido.
 
-```text
-export GO111MODULE="on" export GOPROXY="https://goproxy.cn"
-```
+No Go 1.27, módulos são o padrão e não é preciso configurar `GO111MODULE=on`. O download direto via Bazaar (`bzr`) foi removido.
 
 Outro ponto de atenção é caso você tenha a necessidade de utilizar um repositório privado, o go permite o uso da variavel:
 

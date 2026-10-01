@@ -22,7 +22,7 @@ Use retraction quando:
 - ✅ Versão contém **código não finalizado** que foi taggeado prematuramente
 - ✅ Precisa **desencorajar** uso de uma versão específica
 
-❌ **Não use** para depreciar um módulo inteiro (use comentário no README)
+Para depreciar um módulo inteiro, use um comentário `// Deprecated:` junto da diretiva `module` no `go.mod` e publique uma nova versão. Um aviso no README pode complementar essa indicação.
 
 ## Sintaxe da diretiva 'retract'
 
@@ -55,7 +55,7 @@ retract (
     v1.0.0 // Publicado acidentalmente
     v1.1.0 // Falha de segurança crítica - use v1.1.1+
     [v1.2.0, v1.2.3] // Incompatível com Go 1.18
-    v2.0.0 // Tag prematura, v2 ainda não está pronto
+    v1.4.0 // Tag prematura, versão ainda não está pronta
 )
 ```
 
@@ -104,21 +104,23 @@ github.com/usuario/biblioteca v1.5.0 (retracted) [v1.5.1]
 ### Exemplo 1: Versão publicada acidentalmente
 
 ```go
-// Situação: Você taggeou v2.0.0 por engano
+// Situação: Você publicou v1.4.0 por engano
 // Solução:
 
 module github.com/empresa/api
 
-go 1.25
+go 1.27.0
 
 retract (
-    v2.0.0 // Tag acidental, v2 ainda não está pronto
-    v2.0.1 // Contém apenas retraction
+    v1.4.0 // Tag acidental
+    v1.4.1 // Contém apenas retraction
 )
 
-// Depois: tag v2.0.1 com esta mudança
-// Usuários continuarão usando v1.x.x até v2 estar realmente pronto
+// Publique v1.4.1 com esta mudança
+// @latest volta a selecionar v1.3.0, se essa for a maior versão restante
 ```
+
+Cada caminho de módulo tem suas próprias retrações. Para versões v2, o caminho precisa terminar em `/v2`; uma retração publicada nesse módulo não altera a seleção de versões v1.
 
 ### Exemplo 2: Bug crítico de segurança
 
@@ -158,7 +160,7 @@ retract (
 
 ```bash
 # Ver todas as versões, incluindo retraídas
-$ go list -m -versions github.com/usuario/biblioteca
+$ go list -m -versions -retracted github.com/usuario/biblioteca
 github.com/usuario/biblioteca v1.0.0 v1.1.0 v1.2.0 v1.3.0
 
 # Ver versões com informação de retraction
@@ -209,12 +211,21 @@ $ go get github.com/usuario/biblioteca@v1.3.0
 | Aspecto | Retraction | Deprecation |
 |---------|-----------|-------------|
 | **Escopo** | Versões específicas | Módulo inteiro ou pacote |
-| **Mecanismo** | Diretiva `retract` no go.mod | Comentário no código |
-| **Detecção** | Automática pelo comando go | Manual (leitura de docs) |
+| **Mecanismo** | Diretiva `retract` no go.mod | Comentário `Deprecated:` no go.mod ou na documentação de pacote |
+| **Detecção** | Avisos e consultas do comando go | Avisos do comando go para módulos; documentação para pacotes |
 | **Ação** | Versões evitadas automaticamente | Desenvolvedores decidem migrar |
-| **Desde** | Go 1.16 | Sempre (via documentação) |
+| **Desde** | Go 1.16 | Go 1.17 para avisos de módulos |
 
 ### Exemplo de deprecation
+
+Para um módulo inteiro, no `go.mod`:
+
+```go
+// Deprecated: Use github.com/usuario/newapi.
+module github.com/usuario/oldapi
+```
+
+Para um pacote, na documentação do código:
 
 ```go
 // Package oldapi fornece APIs legadas.
@@ -258,7 +269,7 @@ git push origin v1.5.1
 
 ## Retraction em 'go.sum'
 
-Versões retraídas **permanecem** no `go.sum`:
+Uma retração não remove automaticamente os hashes de uma versão do `go.sum`:
 
 ```
 github.com/usuario/biblioteca v1.5.0 h1:abc...
@@ -267,7 +278,7 @@ github.com/usuario/biblioteca v1.5.1 h1:def...
 github.com/usuario/biblioteca v1.5.1/go.mod h1:uvw...
 ```
 
-Isso é intencional - **builds antigos continuam funcionando**.
+Builds que ainda selecionam a versão retraída continuam funcionando. Quando os hashes deixam de ser necessários, `go mod tidy` pode removê-los; a presença de uma entrada em `go.sum` não seleciona aquela versão.
 
 ## Limitações
 
@@ -346,8 +357,9 @@ $ go mod tidy
 ### Problema: Retraction não aparece
 
 ```bash
-# Retraction só funciona em versões APÓS a que foi retraída
-# Se você retraiu v1.5.0, a diretiva deve estar em v1.5.1+
+# O Go lê as retrações do go.mod da maior versão publicada
+# (preferindo releases a pré-releases), antes de aplicar as retrações.
+# Publique uma nova versão com as diretivas; ela também pode retrair a si mesma.
 
 # Verificar se retraction foi publicada
 $ go list -m -retracted github.com/usuario/biblioteca@v1.5.0

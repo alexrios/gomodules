@@ -5,6 +5,8 @@ Ficando mais simples de aprender e acessível para quem fala português.
   
 Não seria legal? Essa é a idéia desse material :D
 
+O material acompanha o **Go 1.27**. Para saber o que mudou no dia a dia com módulos, veja as [novidades do Go 1.26 e 1.27](releases/1.26-1.27.md).
+
 ## Quer ajudar o projeto?
 
 ### 1 - Ajude com tempo
